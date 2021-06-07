@@ -12,43 +12,43 @@ public class Directory implements Serializable {
             Disk.availableSpace++;
         }
     }
-    public int contiguousAllocation(int n){
-        int result = contiguousEnoughSpace(0,n);
-        for (int i = 0; i < Disk.Blocks.size(); i++) {
-            if(result == -1){ // there is enough space
-                int end = i+n;
-                for (int j = i; j < end; j++) {
-                    Disk.Blocks.set(j,true);
-
-                }
-                return i; // return starting block position
-            }
-            else{
-                result = contiguousEnoughSpace(result+1,n+result+1);
-                if(result == -2) return -1;
-            }
+    private void allocateSize(ArrayList<Integer> indexes){
+        for (int i = 0; i < indexes.size(); i++) {
+            Disk.Blocks.set(indexes.get(i),true);
         }
-        return -1;
     }
-    private int contiguousEnoughSpace(int start,int end){
-        if(end > Disk.Blocks.size()) return -2; // out of space
-        for (int i = start; i < end; i++) {
-            if(start < Disk.Blocks.size() && Disk.Blocks.get(start)) return i;
+    public int contiguousAllocation(int n){
+        int maxFitSize =0, start=0,end,blockSize=0,resOfStart=0;
+        boolean enoughSpace = false;
+        while(start<Disk.Blocks.size()){
+            if(!Disk.Blocks.get(start)){
+                end = start;
+                while (end<Disk.Blocks.size()&&!Disk.Blocks.get(end)){
+                    end++;
+                }
+                if(end-start>=n){
+                    blockSize = end-start;
+                    resOfStart = start;
+                    enoughSpace = true;
+                }
+                maxFitSize = Math.max(maxFitSize,blockSize);
+                start = end;
+            }
+            start++;
         }
-        return -1;
+        if(!enoughSpace)return -1;
+        return resOfStart;
     }
     public File linkedAllocation(int n){
-        File file = new File();
         ArrayList<Integer> indexes = new ArrayList<>();
+        File file = new File();
         file.setIndexes(indexes);
-        for (int i = 0; i < Disk.Blocks.size(); i+=2) {
-            if(n>0 && !Disk.Blocks.get(i)){
-                Disk.Blocks.set(i,true);
+        n++;
+        for (int i = 0; i < Disk.Blocks.size(); i++) {
+            if (n > 0 && !Disk.Blocks.get(i)) {
+                //Disk.Blocks.set(i,true);
                 indexes.add(i);
                 n--;
-            }
-            if(n==0){
-                break;
             }
         }
         String storageDetails = indexes.get(0).toString();
@@ -69,7 +69,7 @@ public class Directory implements Serializable {
         n++;
         for (int i = 0; i < Disk.Blocks.size(); i++) {
             if (n > 0 && !Disk.Blocks.get(i)) {
-                Disk.Blocks.set(i,true);
+                //Disk.Blocks.set(i,true);
                 indexes.add(i);
                 n--;
             }
@@ -124,15 +124,18 @@ public class Directory implements Serializable {
                 File file = new File();
                 System.out.println("file saved.");
                 file.setStorageDetails(String.format("%d %d",res,res+size-1));
-                int count = size;
-                while(count>0){
-                    file.getIndexes().add(res);
-                    res++;
-                    count--;
-                }
+
                 file.setName(directories[directories.length-1]);
                 file.setAllocationType(0); // contiguous type
                 lastDir.files.add(file);
+
+                //allocate
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int j = 0; j < size; j++) {
+                    indexes.add(res+j);
+                }
+                file.setIndexes(indexes);
+                allocateSize(indexes);
                 return file;
             }
             else System.out.println("not enough space");
@@ -145,10 +148,12 @@ public class Directory implements Serializable {
                 res.setName(directories[directories.length-1]);
                 res.setAllocationType(1); // contiguous type
                 lastDir.files.add(res);
+                //allocate
+                allocateSize(res.getIndexes());
                 return res;
             }
         }
-        else{
+        else if(method == 2){
             File res= indexedAllocation(size);
             if( res== null) System.out.println("not enough space");
             else{
@@ -157,8 +162,14 @@ public class Directory implements Serializable {
                 res.setName(directories[directories.length-1]);
                 res.setAllocationType(2); // contiguous type
                 lastDir.files.add(res);
+                //allocate
+                allocateSize(res.getIndexes());
                 return res;
             }
+        }
+        else {
+            System.out.println("bad choice..");
+            return null;
         }
         return null;
     }

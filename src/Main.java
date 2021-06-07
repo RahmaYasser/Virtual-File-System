@@ -15,16 +15,18 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         Scanner scanner2 = new Scanner(System.in);
         //first time running main
-      /*  int n;
+
+        System.out.println("enter number of blocks");
+        int n;
         n = scanner.nextInt();
         Disk.availableSpace = n;
         root.setName("root");
         Disk.Blocks = new ArrayList<>((Arrays.asList(new Boolean[n]))); // for initializing false
-        Collections.fill(Disk.Blocks, Boolean.FALSE); //same*/
+        Collections.fill(Disk.Blocks, Boolean.FALSE); //same
 
 
         //loading from file
-        try{
+        /*try{
             ObjectInputStream is = new ObjectInputStream(new FileInputStream("disk.ser"));
             root = (Directory) is.readObject();
             Disk.Blocks = (ArrayList<Boolean>) is.readObject();
@@ -32,22 +34,17 @@ public class Main {
             is.close();
         } catch (Exception ex){
             ex.printStackTrace();
-        }
-
-
-        int[] methods = {1,2,0};
-        int methodSelector=0;
-
+        }*/
 
         while(true){
             System.out.println("enter command");
             String command = scanner2.nextLine();
             String[] commands = command.split(" ");
             if(commands[0].equals("CreateFile")){
+                System.out.println("enter method num, 0 for contiguous, 1 for linked and 2 for indexed");
+                int method = scanner.nextInt();
                 int size = Integer.parseInt( commands[2]);
-                if(commands[1]!=null && size <= Disk.availableSpace)root.createFile(commands[1],size,methods[methodSelector]);
-                methodSelector++;
-                if(methodSelector>2) methodSelector=0;
+                if(commands[1]!=null )root.createFile(commands[1],size,method);
             }
             else if(commands[0].equals("CreateFolder")){
                 if(commands[1]!=null)root.createDirectory(commands[1]);
