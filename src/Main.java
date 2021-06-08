@@ -9,9 +9,14 @@ import java.util.Scanner;
 
 public class Main {
     static Directory root = new Directory();
+    public static ArrayList<String> userNamees = new ArrayList<>();
+    public static ArrayList<String> passwords = new ArrayList<>();
+    public static Integer currentUser = 0;
 
     public static void main(String[] args) {
 
+        userNamees.add("admin");
+        passwords.add("admin");
         Scanner scanner = new Scanner(System.in);
         Scanner scanner2 = new Scanner(System.in);
         //first time running main
@@ -57,6 +62,38 @@ public class Main {
             }
             else if (commands[0].equals("DisplayDiskStructure")){
                 root.displayDiskStructure();
+            }
+            else if(commands[0].equals("TellUser")){
+                System.out.println(userNamees.get(currentUser));
+            }
+            else if(commands[0].equals("CUser")){
+                if(currentUser == 0){
+                    boolean found = false;
+                    for (int i = 0; i <userNamees.size(); i++) {
+                        if(userNamees.get(i).equals(commands[1])) found= true;
+                    }
+                    if(!found){
+                        userNamees.add(commands[1]);
+                        passwords.add(commands[2]);
+                    }
+                    else System.out.println("user already there");
+                }
+                else System.out.println("You aren't admin to create new user..");
+            }
+            else if(commands[0].equals("Login")){
+                if(currentUser == 0){
+                    boolean found = false;
+                    for (int i = 0; i <userNamees.size(); i++) {
+                        if(userNamees.get(i).equals(commands[1]) && passwords.get(i).equals(commands[2])) {
+                            found= true;
+                            currentUser = i;
+                            break; }
+                        }
+                    if(!found) System.out.println("authentication failed..");
+                }
+            }
+            else if(commands[0].equals("Grant")){
+
             }
             else System.out.println("unexpected command!");
             System.out.println("press 1 to run more commands or 2 to save and exit");

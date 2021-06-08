@@ -1,12 +1,11 @@
-import javax.swing.*;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 
 public class Directory implements Serializable {
-    public ArrayList<File> files;
+    public ArrayList<FileClass> files;
     public ArrayList<Directory> subDirectories;
     private String name;
-    private void freeAllocation(File file){
+    private void freeAllocation(FileClass file){
         for (int k = 0; k < file.getIndexes().size(); k++) { // for each block
             Disk.Blocks.set(file.getIndexes().get(k),false);
             Disk.availableSpace++;
@@ -39,9 +38,9 @@ public class Directory implements Serializable {
         if(!enoughSpace)return -1;
         return resOfStart;
     }
-    public File linkedAllocation(int n){
+    public FileClass linkedAllocation(int n){
         ArrayList<Integer> indexes = new ArrayList<>();
-        File file = new File();
+        FileClass file = new FileClass();
         file.setIndexes(indexes);
         n++;
         for (int i = 0; i < Disk.Blocks.size(); i++) {
@@ -62,9 +61,9 @@ public class Directory implements Serializable {
         }
         return null;
     }
-    public File indexedAllocation(int n) {
+    public FileClass indexedAllocation(int n) {
         ArrayList<Integer> indexes = new ArrayList<>();
-        File file = new File();
+        FileClass file = new FileClass();
         file.setIndexes(indexes);
         n++;
         for (int i = 0; i < Disk.Blocks.size(); i++) {
@@ -85,7 +84,7 @@ public class Directory implements Serializable {
         }
         return null;
     }
-    public File createFile(String path, int size,int method){
+    public FileClass createFile(String path, int size, int method){
         String [] directories = path.split("/");
         int i=1;
         if(!directories[0].equals("root")) {
@@ -121,7 +120,7 @@ public class Directory implements Serializable {
             int res=contiguousAllocation(size);
             if( res!= -1) {
                 Disk.availableSpace-=size;
-                File file = new File();
+                FileClass file = new FileClass();
                 System.out.println("file saved.");
                 file.setStorageDetails(String.format("%d %d",res,res+size-1));
 
@@ -140,7 +139,7 @@ public class Directory implements Serializable {
             }
             else System.out.println("not enough space");
         }else if(method == 1){
-            File res= linkedAllocation(size);
+            FileClass res= linkedAllocation(size);
             if( res== null) System.out.println("not enough space");
             else{
                 Disk.availableSpace-=size;
@@ -154,7 +153,7 @@ public class Directory implements Serializable {
             }
         }
         else if(method == 2){
-            File res= indexedAllocation(size);
+            FileClass res= indexedAllocation(size);
             if( res== null) System.out.println("not enough space");
             else{
                 Disk.availableSpace-=size;
@@ -314,6 +313,64 @@ public class Directory implements Serializable {
             else System.out.println(String.format("%d block is allocated",i));
         }
     }
+    public String grantUserPermission(String user_name,String path){
+        if(Main.currentUser != 0) {
+           return "you are not allowed to use this command";
+
+        }
+        //if user exists:
+        boolean found = false;
+        for (int i = 0; i <Main.userNamees.size(); i++) {
+            if(Main.userNamees.get(i).equals(user_name)) {
+                found= true;
+
+                break; }
+        }
+        if(!found) return "user isn't found..";
+
+        //if path exists:
+        path+="/xxx";
+        String [] directories = path.split("/");
+        int i=1;
+        if(!directories[0].equals("root")) {
+            return ("invalid path");
+
+        }
+        ArrayList<Directory> dirPointer = Main.root.subDirectories;
+        Directory lastDir=Main.root;
+        while(i< directories.length-1){
+            boolean directoryExists = false;
+            for (int j = 0; j < dirPointer.size() ; j++) {
+                if(directories[i].equals(dirPointer.get(j).getName())){
+                    directoryExists = true;
+                    lastDir = dirPointer.get(j);
+                    break;
+                }
+                dirPointer = dirPointer.get(j).subDirectories;
+
+            }
+            if(!directoryExists) return ("invalid path");
+            i++;
+        }
+        for (int j = 0; j < lastDir.subDirectories.size(); j++) {
+            if(directories[directories.length-1].equals(lastDir.subDirectories.get(j).getName())) {
+                System.out.println("valid path" );
+                //TODO grant
+                return "done..";
+            }
+        }
+        return "something went wrong";
+    }
+    private void grant(String path){
+        try {
+            File file = new File("permissions.txt");
+            FileReader
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
     public String getName() {
         return name;
     }
@@ -323,9 +380,9 @@ public class Directory implements Serializable {
     }
 
     public Directory() {
-        files = new ArrayList<File>();
+        files = new ArrayList<FileClass>();
         subDirectories = new ArrayList<Directory>();
     }
-
+    
 
 }

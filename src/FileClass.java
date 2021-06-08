@@ -1,7 +1,7 @@
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class File implements Serializable {
+public class FileClass implements Serializable {
     private String name;
     private String storageDetails;
     private int allocationType;
@@ -16,11 +16,11 @@ public class File implements Serializable {
         this.indexes = indexes;
     }
 
-    public File() {
+    public FileClass() {
         indexes = new ArrayList<>();
     }
 
-    public File(String name, String storageDetails, int allocationType) {
+    public FileClass(String name, String storageDetails, int allocationType) {
         this.name = name;
         this.storageDetails = storageDetails;
         this.allocationType = allocationType;
