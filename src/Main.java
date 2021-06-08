@@ -21,7 +21,7 @@ public class Main {
         Scanner scanner2 = new Scanner(System.in);
         //first time running main
 
-        System.out.println("enter number of blocks");
+        /*System.out.println("enter number of blocks");
         int n;
         n = scanner.nextInt();
         Disk.availableSpace = n;
@@ -29,17 +29,19 @@ public class Main {
         Disk.Blocks = new ArrayList<>((Arrays.asList(new Boolean[n]))); // for initializing false
         Collections.fill(Disk.Blocks, Boolean.FALSE); //same
 
-
+*/
         //loading from file
-        /*try{
+        try{
             ObjectInputStream is = new ObjectInputStream(new FileInputStream("disk.ser"));
             root = (Directory) is.readObject();
             Disk.Blocks = (ArrayList<Boolean>) is.readObject();
+            userNamees = (ArrayList<String>) is.readObject();
+            passwords = (ArrayList<String>) is.readObject();
             System.out.println(Disk.Blocks.get(0));
             is.close();
         } catch (Exception ex){
             ex.printStackTrace();
-        }*/
+        }
 
         while(true){
             System.out.println("enter command");
@@ -49,13 +51,22 @@ public class Main {
                 System.out.println("enter method num, 0 for contiguous, 1 for linked and 2 for indexed");
                 int method = scanner.nextInt();
                 int size = Integer.parseInt( commands[2]);
-                if(commands[1]!=null )root.createFile(commands[1],size,method);
+                if(commands[1]!=null )root.createFile(commands[1],size,method, userNamees.get(currentUser));
             }
             else if(commands[0].equals("CreateFolder")){
-                if(commands[1]!=null)root.createDirectory(commands[1]);
+                if(commands[1]!=null)root.createDirectory(commands[1], userNamees.get(currentUser));
             }
             else if(commands[0].equals("DeleteFile")) {
-                if(commands[1]!=null)root.deleteFile(commands[1]);
+                if(commands[1]!=null&&root.deleteFile(commands[1], userNamees.get(currentUser))){
+                    System.out.println("deleted successsully");
+                }
+                else System.out.println("not deleted");
+            }
+            else if(commands[0].equals("DeleteFolder")) {
+                if(commands[1]!=null&&root.deleteDirectory(commands[1], userNamees.get(currentUser))){
+                    System.out.println("deleted successsully");
+                }
+                else System.out.println("not deleted");
             }
             else if(commands[0].equals("DisplayDiskStatus")){
                 root.displayDiskStatus();
@@ -81,19 +92,18 @@ public class Main {
                 else System.out.println("You aren't admin to create new user..");
             }
             else if(commands[0].equals("Login")){
-                if(currentUser == 0){
-                    boolean found = false;
-                    for (int i = 0; i <userNamees.size(); i++) {
-                        if(userNamees.get(i).equals(commands[1]) && passwords.get(i).equals(commands[2])) {
-                            found= true;
-                            currentUser = i;
-                            break; }
-                        }
-                    if(!found) System.out.println("authentication failed..");
+                boolean found = false;
+                for (int i = 0; i <userNamees.size(); i++) {
+                    if(userNamees.get(i).equals(commands[1]) && passwords.get(i).equals(commands[2])) {
+                        found= true;
+                        currentUser = i;
+                        break; }
                 }
+                if(!found) System.out.println("authentication failed..");
+
             }
             else if(commands[0].equals("Grant")){
-
+                System.out.println(root.grantUserPermission(commands[1],commands[2],commands[3]));
             }
             else System.out.println("unexpected command!");
             System.out.println("press 1 to run more commands or 2 to save and exit");
@@ -105,6 +115,8 @@ public class Main {
                     ObjectOutputStream os = new ObjectOutputStream(fs);
                     os.writeObject(root);
                     os.writeObject(Disk.Blocks);
+                    os.writeObject(userNamees);
+                    os.writeObject(passwords);
                     os.close();
                 } catch (Exception ex){
                     ex.printStackTrace();
@@ -117,8 +129,5 @@ public class Main {
                 break;
             }
         }
-
-
-
     }
 }
